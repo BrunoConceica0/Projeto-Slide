@@ -1,7 +1,7 @@
 export default class Slide {
-  constructor(wrapper, slide) {
-    this.wrapper = document.querySelector(wrapper);
+  constructor(slide, wrapper) {
     this.slide = document.querySelector(slide);
+    this.wrapper = document.querySelector(wrapper);
     if (!this.wrapper || !this.slide) {
       console.error("Wrapper or slide not found.");
       return;
@@ -68,10 +68,43 @@ export default class Slide {
     this.onEnd = this.onEnd.bind(this);
     this.updatePosition = this.updatePosition.bind(this);
   }
+  // slides-config
+
+  // configuração para deixa a imagem no centra do site
+  slidePosition(slide) {
+    const margin = (this.wrapper.offsetWidth - slide.offsetWidth) / 2;
+    return -(slide.offsetLeft - margin);
+  }
+  //  transformando o slide em array para pode falar com cada elemento
+  slidesConfig() {
+    this.slideArray = [...this.slide.children].map((element) => {
+      const position = this.slidePosition(element);
+      return { position, element };
+    });
+  }
+  // index da navegação dos slides
+  slidesIndexNav(index) {
+    const last = this.slideArray.length - 1;
+
+    this.index = {
+      preve: index ? index - 1 : undefined,
+      active: index,
+      next: index === last ? undefined : index + 1,
+    };
+  }
+  // um metoda que muda o slide com passar do index
+  changeSlide(index) {
+    const activeSlide = this.slideArray[index];
+    this.moveSlide(this.slideArray[index].position);
+    this.slidesIndexNav(index);
+    this.dist.finalPosition = activeSlide.position;
+  }
   // iniciar os eventos
   init() {
     this.bindEvent();
     this.addSlideEvent();
+    this.slidesConfig();
+    this.slidePosition(this.slide);
     return this;
   }
 }
