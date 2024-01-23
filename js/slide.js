@@ -14,6 +14,10 @@ export default class Slide {
     this.dist.movement = (this.dist.startX - clientX) * 1.5;
     return this.dist.finalPosition - this.dist.movement;
   }
+  // adicionando o active do style quando for true, ativar o transform de .3s
+  transition(active) {
+    this.slide.style.transition = active ? "transform 0.3s" : "";
+  }
   moveSlide(distX) {
     this.dist.movePosition = distX;
     this.slide.style.transform = `translate3d(${distX}px, 0, 0)`;
@@ -35,6 +39,8 @@ export default class Slide {
     // o mousemouve sera excutado quando somento houver click e executará o callback de onMove
 
     this.wrapper.addEventListener(movetype, this.onMove);
+    //o evento de transform começo false para evitar que comeca no começo
+    this.transition(false);
   }
   onMove(event) {
     // console.log("moveu");
@@ -60,6 +66,19 @@ export default class Slide {
 
     this.wrapper.removeEventListener(movetype, this.onMove);
     this.dist.finalPosition = this.dist.movePosition;
+    // tem como transition com true para ative somente no final da execução, tem que colocar no init támbem
+    this.transition(true);
+    this.changeSlideOnEnd();
+  }
+  // converindo se a img do slide, quando estive na metade e ao soltar o clique, automaticamente vai para a proxíma img ou a anterior
+  changeSlideOnEnd() {
+    if (this.dist.movement > 120 && this.index.next !== undefined) {
+      this.activeNextSlide();
+    } else if (this.dist.movement < -120 && this.index.prev !== undefined) {
+      this.activePrevSlide();
+    } else {
+      this.changeSlide(this.index.active);
+    }
   }
   // colocando todos callback no bind em forma de paramentro
   bindEvent() {
@@ -87,7 +106,7 @@ export default class Slide {
     const last = this.slideArray.length - 1;
 
     this.index = {
-      preve: index ? index - 1 : undefined,
+      prev: index ? index - 1 : undefined,
       active: index,
       next: index === last ? undefined : index + 1,
     };
@@ -99,8 +118,21 @@ export default class Slide {
     this.slidesIndexNav(index);
     this.dist.finalPosition = activeSlide.position;
   }
+  // função de proxímo e o anterio da imagem
+  activePrevSlide() {
+    if (this.index.prev !== undefined) {
+      this.changeSlide(this.index.prev);
+    }
+  }
+  activeNextSlide() {
+    if (this.index.next !== undefined) {
+      this.changeSlide(this.index.next);
+    }
+  }
+
   // iniciar os eventos
   init() {
+    this.transition(true);
     this.bindEvent();
     this.addSlideEvent();
     this.slidesConfig();
