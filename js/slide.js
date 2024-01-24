@@ -1,13 +1,12 @@
+import debouce from "./debounce.js";
 export default class Slide {
   constructor(slide, wrapper) {
     this.slide = document.querySelector(slide);
     this.wrapper = document.querySelector(wrapper);
-    if (!this.wrapper || !this.slide) {
-      console.error("Wrapper or slide not found.");
-      return;
-    }
+
     // Este objeto vai ser geral, vai ter referencia dos números, na onde esta o slide, quando foi movido o mouse, finalPosition = posição final, startX = pegando referencia inicial onde foi executado o click ,movement= o total que se moveu
     this.dist = { finalPosition: 0, startX: 0, movement: 0 };
+    this.activeClass = "active";
   }
   //atualzar o movement
   updatePosition(clientX) {
@@ -32,7 +31,7 @@ export default class Slide {
       movetype = "mousemove";
     } else {
       this.dist.startX = event.changedTouches[0].clientX;
-      console.log(event);
+      // console.log(event);
       movetype = "touchmove";
     }
     // console.log("Mousedown");
@@ -80,13 +79,7 @@ export default class Slide {
       this.changeSlide(this.index.active);
     }
   }
-  // colocando todos callback no bind em forma de paramentro
-  bindEvent() {
-    this.onStart = this.onStart.bind(this);
-    this.onMove = this.onMove.bind(this);
-    this.onEnd = this.onEnd.bind(this);
-    this.updatePosition = this.updatePosition.bind(this);
-  }
+
   // slides-config
 
   // configuração para deixa a imagem no centra do site
@@ -111,12 +104,19 @@ export default class Slide {
       next: index === last ? undefined : index + 1,
     };
   }
+  changeActiveClass() {
+    this.slideArray.forEach((item) => {
+      item.element.classList.remove(this.activeClass);
+    });
+    this.slideArray[this.index.active].element.classList.add(this.activeClass);
+  }
   // um metoda que muda o slide com passar do index
   changeSlide(index) {
     const activeSlide = this.slideArray[index];
     this.moveSlide(this.slideArray[index].position);
     this.slidesIndexNav(index);
     this.dist.finalPosition = activeSlide.position;
+    this.changeActiveClass();
   }
   // função de proxímo e o anterio da imagem
   activePrevSlide() {
@@ -129,7 +129,24 @@ export default class Slide {
       this.changeSlide(this.index.next);
     }
   }
-
+  onRezise() {
+    setTimeout(() => {
+      this.slidesConfig();
+      this.changeSlide(this.index.active);
+      console.log("teste");
+    }, 1000);
+  }
+  addReziseEvent() {
+    window.addEventListener("resize", this.onRezise);
+  }
+  // colocando todos callback no bind em forma de paramentro
+  bindEvent() {
+    this.onStart = this.onStart.bind(this);
+    this.onMove = this.onMove.bind(this);
+    this.onEnd = this.onEnd.bind(this);
+    this.updatePosition = this.updatePosition.bind(this);
+    this.onRezise = debouce(this.onRezise.bind(this), 200);
+  }
   // iniciar os eventos
   init() {
     this.transition(true);
@@ -137,6 +154,8 @@ export default class Slide {
     this.addSlideEvent();
     this.slidesConfig();
     this.slidePosition(this.slide);
+    // this.slidesIndexNav(0);
+    this.onRezise();
     return this;
   }
 }
