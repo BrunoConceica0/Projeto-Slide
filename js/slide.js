@@ -1,5 +1,5 @@
 import debouce from "./debounce.js";
-export default class Slide {
+export class Slide {
   constructor(slide, wrapper) {
     this.slide = document.querySelector(slide);
     this.wrapper = document.querySelector(wrapper);
@@ -146,6 +146,8 @@ export default class Slide {
     this.onEnd = this.onEnd.bind(this);
     this.updatePosition = this.updatePosition.bind(this);
     this.onRezise = debouce(this.onRezise.bind(this), 200);
+    this.activeNextSlide = this.activeNextSlide.bind(this);
+    this.activePrevSlide = this.activePrevSlide.bind(this);
   }
   // iniciar os eventos
   init() {
@@ -156,6 +158,19 @@ export default class Slide {
     this.slidePosition(this.slide);
     // this.slidesIndexNav(0);
     this.onRezise();
+    this.changeSlide(0);
     return this;
+  }
+}
+
+export class SlideNav extends Slide {
+  addArrow(prev, next) {
+    this.prevElement = document.querySelector(prev);
+    this.nextElement = document.querySelector(next);
+    this.addArrowEvent();
+  }
+  addArrowEvent() {
+    this.prevElement.addEventListener("click", this.activePrevSlide);
+    this.nextElement.addEventListener("click", this.activeNextSlide);
   }
 }
