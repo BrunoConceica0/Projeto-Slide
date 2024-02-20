@@ -28,7 +28,7 @@ export class Slide {
     if (event.type === "mousedown") {
       event.preventDefault(); //evitar que não ocorra a puxar a imagem
       this.dist.startX = event.clientX;
-      console.log(event);
+      // console.log(event);
       movetype = "mousemove";
     } else {
       this.dist.startX = event.changedTouches[0].clientX;
@@ -165,7 +165,7 @@ export class Slide {
   }
 }
 
-export class SlideNav extends Slide {
+export default class SlideNav extends Slide {
   addArrow(prev, next) {
     this.prevElement = document.querySelector(prev);
     this.nextElement = document.querySelector(next);
