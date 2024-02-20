@@ -3,6 +3,7 @@ export class Slide {
   constructor(slide, wrapper) {
     this.slide = document.querySelector(slide);
     this.wrapper = document.querySelector(wrapper);
+    this.changeEvent = new Event("changeEvent");
 
     // Este objeto vai ser geral, vai ter referencia dos números, na onde esta o slide, quando foi movido o mouse, finalPosition = posição final, startX = pegando referencia inicial onde foi executado o click ,movement= o total que se moveu
     this.dist = { finalPosition: 0, startX: 0, movement: 0 };
@@ -117,6 +118,7 @@ export class Slide {
     this.slidesIndexNav(index);
     this.dist.finalPosition = activeSlide.position;
     this.changeActiveClass();
+    this.wrapper.dispatchEvent(this.changeEvent);
   }
   // função de proxímo e o anterio da imagem
   activePrevSlide() {
@@ -133,7 +135,7 @@ export class Slide {
     setTimeout(() => {
       this.slidesConfig();
       this.changeSlide(this.index.active);
-      console.log("teste");
+      // console.log("teste");
     }, 1000);
   }
   addReziseEvent() {
@@ -169,8 +171,57 @@ export class SlideNav extends Slide {
     this.nextElement = document.querySelector(next);
     this.addArrowEvent();
   }
+  constructor(slide, wrapper) {
+    super(slide, wrapper);
+    this.bindControlEvent();
+  }
   addArrowEvent() {
     this.prevElement.addEventListener("click", this.activePrevSlide);
     this.nextElement.addEventListener("click", this.activeNextSlide);
+  }
+  //Colocando um novo função para adicionar um element no html para fazer uns botão de  proximo e anterio
+  createControl() {
+    //criando o element uç
+    const control = document.createElement("ul");
+    //id de data-set
+    control.dataset.control = "slide";
+    //chamando o slide para fazer o forEach
+    this.slideArray.forEach((item, index) => {
+      //adcionando li a para cada img, se for mais um é adiciondo +=, colocando index + 1, porque naturalmente o index comeca com 0 e temos que comeca com  1 e o usuário não a númeração 0
+      control.innerHTML += `<li><a href="#slide"${index + 1}>${
+        index + 1
+      }</a></li>`;
+    });
+    // e finalmente adicionado o control no html com wrapper.appendChild e darmos um estilizada nos elementos
+    this.wrapper.appendChild(control);
+    return control;
+  }
+  // controla o evento de control
+  eventControl(item, index) {
+    item.addEventListener("click", (event) => {
+      event.preventDefault();
+      //vai mudar pelo index que vou passar
+      this.changeSlide(index);
+    });
+    this.wrapper.addEventListener("changeEvent", this.activaControlItem);
+  }
+  addControl(customControl) {
+    //dar opção para o usuário controlar o control, se não  o creator vai controlar
+    this.control =
+      document.querySelector(customControl) || this.createControl();
+    //transformado o control em array e destriturando para falar com cada elemento
+    this.controlArray = [...this.control.children];
+    this.controlArray.forEach(this.eventControl);
+    this.activaControlItem();
+  }
+  activaControlItem() {
+    this.controlArray.forEach((item) =>
+      item.classList.remove(this.activeClass)
+    );
+    this.controlArray[this.index.active].classList.add(this.activeClass);
+  }
+  bindControlEvent() {
+    this.eventControl = this.eventControl.bind(this);
+    this.activaControlItem = this.activaControlItem.bind(this);
   }
 }
